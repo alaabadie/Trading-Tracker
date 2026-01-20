@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gold Tracker">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23f59e0b' width='100' height='100' rx='20'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>💰</text></svg>">
+    <title>Gold Trading Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde047 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow: visible;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        h1 {
+            font-size: clamp(20px, 5vw, 32px);
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        .gold-icon {
+            color: #d97706;
+            font-size: clamp(24px, 6vw, 36px);
+        }
+        input[type="month"], input[type="number"] {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 200px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 100px;
+        }
+        .stat-card.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .stat-card.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-card.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .stat-card.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: clamp(20px, 5vw, 32px);
+            font-weight: bold;
+        }
+        .stat-card input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: clamp(20px, 5vw, 32px);
+            font-weight: bold;
+            width: 100%;
+            outline: none;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .info-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+        }
+        .info-value.green { color: #10b981; }
+        .info-value.blue { color: #3b82f6; }
+        .info-value.orange { color: #f59e0b; }
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .progress-bar-bg {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 16px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        .progress-bar-bg {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 16px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+        .day-name {
+            text-align: center;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 12px;
+            padding: 8px 2px;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+        .calendar-day {
+            min-height: 60px;
+            height: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            font-size: 12px;
+        }
+        .calendar-day:active {
+            transform: scale(0.95);
+        }
+        .calendar-day:hover:not(.weekend):not(.empty) {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        .calendar-day.weekend {
+            background: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .calendar-day.has-profit {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        .calendar-day.today {
+            box-shadow: 0 0 0 3px #3b82f6;
+        }
+        .calendar-day.empty {
+            border: none;
+            background: transparent;
+            cursor: default;
+        }
+        .day-number {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .day-profit {
+            font-size: 10px;
+            font-weight: bold;
+            color: #059669;
+            word-break: break-all;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+        }
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        .modal input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 18px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+        .btn-save {
+            background: #10b981;
+            color: white;
+        }
+        .btn-save:hover {
+            background: #059669;
+        }
+        .btn-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .tab {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            color: #3b82f6;
+        }
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .tab-content {
+            display: none;
+            min-height: 600px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .report-table th {
+            background: #f3f4f6;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .report-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .report-table tr:hover {
+            background: #f9fafb;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .chart-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 300px;
+            padding: 20px 0;
+        }
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #3b82f6, #60a5fa);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            min-height: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .bar:hover {
+            background: linear-gradient(to top, #2563eb, #3b82f6);
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .bar-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .summary-card h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .export-btn {
+            padding: 12px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .export-btn:active {
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            .balance-actions {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            input[type="month"] {
+                max-width: 100%;
+            }
+            .report-table {
+                font-size: 12px;
+            }
+            .report-table th,
+            .report-table td {
+                padding: 10px 5px;
+            }
+        }
+        .export-btn:hover {
+            background: #2563eb;
+        }
+        .balance-section {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .balance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .balance-title {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .balance-amount {
+            font-size: clamp(28px, 8vw, 42px);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .balance-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .balance-input-group {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .balance-input-group label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 6px;
+            opacity: 0.9;
+        }
+        .balance-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+        .balance-input-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .balance-input-group input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255,255,255,0.2);
+        }
+        .balance-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .balance-btn:active {
+            transform: scale(0.95);
+        }
+        .balance-btn.deposit {
+            background: #10b981;
+            color: white;
+        }
+        .balance-btn.deposit:hover {
+            background: #059669;
+        }
+        .balance-btn.withdraw {
+            background: #ef4444;
+            color: white;
+        }
+        .balance-btn.withdraw:hover {
+            background: #dc2626;
+        }
+        .transactions-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            gap: 10px;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .transaction-type {
+            font-size: 14px;
+        }
+        .transaction-amount {
+            font-weight: 600;
+        }
+        .transaction-amount.positive {
+            color: #34d399;
+        }
+        .transaction-amount.negative {
+            color: #fca5a5;
+        }
+        .delete-transaction-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            font-weight: 600;
+        }
+        .delete-transaction-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+        .delete-transaction-btn:active {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('tracker')">Tracker</button>
+                <button class="tab" onclick="switchTab('report')">Monthly Report</button>
+            </div>
+
+            <div id="tracker" class="tab-content active">
+                <div class="balance-section">
+                    <div class="balance-header">
+                        <div class="balance-title">💼 Account Balance</div>
+                    </div>
+                    <div class="balance-amount" id="accountBalance">$0.00</div>
+                    <div class="balance-actions">
+                        <div class="balance-input-group">
+                            <label>💰 Deposit Amount</label>
+                            <input type="number" id="depositInput" placeholder="0.00" step="0.01">
+                            <button class="balance-btn deposit" onclick="handleDeposit()">Add Deposit</button>
+                        </div>
+                        <div class="balance-input-group">
+                            <label>💸 Withdraw Amount</label>
+                            <input type="number" id="withdrawInput" placeholder="0.00" step="0.01">
+                            <button class="balance-btn withdraw" onclick="handleWithdraw()">Make Withdrawal</button>
+                        </div>
+                    </div>
+                    <div class="transactions-list" id="transactionsList"></div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; color: #374151; margin-bottom: 10px;">📅 Select Month</h2>
+                    <input type="month" id="monthSelector" style="width: 100%; max-width: 100%;">
+                </div>
+
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-label">Monthly Target</div>
+                    <input type="number" id="monthlyTarget" value="3000">
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label">Total Achieved</div>
+                    <div class="stat-value" id="totalAchieved">$0.00</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-label">Initial Daily Average</div>
+                    <div class="stat-value" id="initialAverage">$0.00</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-label">Adjusted Daily Average</div>
+                    <div class="stat-value" id="adjustedAverage">$0.00</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="info-label">Working Days</div>
+                    <div class="info-value" id="workingDays">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Worked Days</div>
+                    <div class="info-value green" id="workedDays">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Remaining Days</div>
+                    <div class="info-value blue" id="remainingDays">0</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Remaining Amount</div>
+                    <div class="info-value orange" id="remainingAmount">$0.00</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span>Progress</span>
+                    <span id="progressPercent">0.0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div class="calendar-header">
+                <div class="day-name">Sun</div>
+                <div class="day-name">Mon</div>
+                <div class="day-name">Tue</div>
+                <div class="day-name">Wed</div>
+                <div class="day-name">Thu</div>
+                <div class="day-name">Fri</div>
+                <div class="day-name">Sat</div>
+            </div>
+
+            <div class="calendar" id="calendar"></div>
+            </div>
+
+            <div id="report" class="tab-content">
+                <div class="header">
+                    <h1><span class="gold-icon">📊</span> Monthly Performance Report</h1>
+                    <button class="export-btn" onclick="exportReport()">Export to CSV</button>
+                </div>
+
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>Total Months</h3>
+                        <div class="value" id="totalMonths">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total Profit</h3>
+                        <div class="value" id="totalProfit">$0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Average Monthly</h3>
+                        <div class="value" id="avgMonthly">$0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Best Month</h3>
+                        <div class="value" id="bestMonth">-</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h2 style="margin-bottom: 20px; color: #374151;">Monthly Comparison</h2>
+                    <div class="bar-chart" id="barChart"></div>
+                </div>
+
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Target</th>
+                            <th>Achieved</th>
+                            <th>Working Days</th>
+                            <th>Worked Days</th>
+                            <th>Avg Per Day</th>
+                            <th>Achievement</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Enter Profit</h2>
+            <input type="number" id="profitInput" step="0.01" placeholder="Enter profit amount">
+            <div class="modal-buttons">
+                <button class="btn btn-save" id="saveBtn">Save</button>
+                <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dailyProfits = {};
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let editingDay = null;
+        let accountBalance = 0;
+        let transactions = [];
+
+        function loadBalance() {
+            const storedBalance = localStorage.getItem('account-balance');
+            const storedTransactions = localStorage.getItem('transactions');
+            
+            accountBalance = storedBalance ? parseFloat(storedBalance) : 0;
+            transactions = storedTransactions ? JSON.parse(storedTransactions) : [];
+            
+            updateBalanceDisplay();
+        }
+
+        function saveBalance() {
+            localStorage.setItem('account-balance', accountBalance.toString());
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        function updateBalanceDisplay() {
+            document.getElementById('accountBalance').textContent = `${accountBalance.toFixed(2)}`;
+            renderTransactions();
+        }
+
+        function renderTransactions() {
+            const list = document.getElementById('transactionsList');
+            if (transactions.length === 0) {
+                list.innerHTML = '<p style="text-align: center; opacity: 0.7; padding: 20px;">No transactions yet</p>';
+                return;
+            }
+            
+            list.innerHTML = transactions.slice(-10).reverse().map(t => {
+                const isPositive = t.type === 'deposit';
+                return `
+                    <div class="transaction-item">
+                        <div class="transaction-type">
+                            ${isPositive ? '💰' : '💸'} ${t.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                            <div style="font-size: 11px; opacity: 0.7;">${t.date}</div>
+                        </div>
+                        <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                            ${isPositive ? '+' : '-'}${Math.abs(t.amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function handleDeposit() {
+            const input = document.getElementById('depositInput');
+            const amount = parseFloat(input.value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid deposit amount');
+                return;
+            }
+            
+            accountBalance += amount;
+            transactions.push({
+                type: 'deposit',
+                amount: amount,
+                date: new Date().toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })
+            });
+            
+            saveBalance();
+            updateBalanceDisplay();
+            updateDisplay();
+            input.value = '';
+        }
+
+        function handleWithdraw() {
+            const input = document.getElementById('withdrawInput');
+            const amount = parseFloat(input.value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid withdrawal amount');
+                return;
+            }
+            
+            const totalAchieved = getTotalAchieved();
+            if (amount > totalAchieved) {
+                alert('Insufficient balance for this withdrawal');
+                return;
+            }
+            
+            accountBalance -= amount;
+            transactions.push({
+                type: 'withdrawal',
+                amount: amount,
+                date: new Date().toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })
+            });
+            
+            saveBalance();
+            updateBalanceDisplay();
+            updateDisplay();
+            input.value = '';
+        }
+
+        function deleteTransaction(index) {
+            if (!confirm('Are you sure you want to delete this transaction?')) {
+                return;
+            }
+            
+            const transaction = transactions[index];
+            
+            if (transaction.type === 'deposit') {
+                accountBalance -= transaction.amount;
+            } else {
+                accountBalance += transaction.amount;
+            }
+            
+            transactions.splice(index, 1);
+            
+            saveBalance();
+            updateBalanceDisplay();
+            updateDisplay();
+        }
+
+        document.getElementById('depositInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleDeposit();
+        });
+
+        document.getElementById('withdrawInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') handleWithdraw();
+        });
+
+        function getWorkingDays(year, month) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let workingDays = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayOfWeek = date.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    workingDays++;
+                }
+            }
+            return workingDays;
+        }
+
+        function getWorkedDays() {
+            return Object.keys(dailyProfits).filter(day => {
+                const date = new Date(currentYear, currentMonth, parseInt(day));
+                const dayOfWeek = date.getDay();
+                return dayOfWeek !== 0 && dayOfWeek !== 6;
+            }).length;
+        }
+
+        function getTotalAchieved() {
+            const dailyTotal = Object.values(dailyProfits).reduce((sum, profit) => sum + parseFloat(profit || 0), 0);
+            return dailyTotal + accountBalance;
+        }
+
+        function updateDisplay() {
+            const monthlyTarget = parseFloat(document.getElementById('monthlyTarget').value) || 0;
+            const workingDays = getWorkingDays(currentYear, currentMonth);
+            const workedDays = getWorkedDays();
+            const remainingDays = Math.max(0, workingDays - workedDays);
+            const totalAchieved = getTotalAchieved();
+            const remainingAmount = monthlyTarget - totalAchieved;
+            const initialAverage = workingDays > 0 ? (monthlyTarget / workingDays) : 0;
+            const adjustedAverage = remainingDays > 0 ? (remainingAmount / remainingDays) : 0;
+            const progressPercent = monthlyTarget > 0 ? (totalAchieved / monthlyTarget) * 100 : 0;
+
+            document.getElementById('totalAchieved').textContent = `$${totalAchieved.toFixed(2)}`;
+            document.getElementById('initialAverage').textContent = `$${initialAverage.toFixed(2)}`;
+            document.getElementById('adjustedAverage').textContent = `$${adjustedAverage.toFixed(2)}`;
+            document.getElementById('workingDays').textContent = workingDays;
+            document.getElementById('workedDays').textContent = workedDays;
+            document.getElementById('remainingDays').textContent = remainingDays;
+            document.getElementById('remainingAmount').textContent = `$${remainingAmount.toFixed(2)}`;
+            document.getElementById('progressPercent').textContent = `${progressPercent.toFixed(1)}%`;
+            document.getElementById('progressBar').style.width = `${Math.min(progressPercent, 100)}%`;
+        }
+
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const today = new Date().getDate();
+            const isCurrentMonth = new Date().getMonth() === currentMonth && new Date().getFullYear() === currentYear;
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'calendar-day empty';
+                calendar.appendChild(emptyDiv);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentYear, currentMonth, day);
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const hasProfit = dailyProfits[day] !== undefined;
+                const isToday = isCurrentMonth && day === today;
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                if (isWeekend) dayDiv.classList.add('weekend');
+                if (hasProfit) dayDiv.classList.add('has-profit');
+                if (isToday) dayDiv.classList.add('today');
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayDiv.appendChild(dayNumber);
+                
+                if (hasProfit) {
+                    const profitDiv = document.createElement('div');
+                    profitDiv.className = 'day-profit';
+                    profitDiv.textContent = `${dailyProfits[day]}`;
+                    dayDiv.appendChild(profitDiv);
+                }
+
+                if (!isWeekend) {
+                    dayDiv.onclick = () => openModal(day);
+                }
+
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function openModal(day) {
+            editingDay = day;
+            document.getElementById('modalTitle').textContent = `Enter Profit for Day ${day}`;
+            document.getElementById('profitInput').value = dailyProfits[day] || '';
+            document.getElementById('modal').classList.add('show');
+            document.getElementById('profitInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            editingDay = null;
+        }
+
+        function saveProfit() {
+            const value = document.getElementById('profitInput').value;
+            if (editingDay !== null) {
+                const numValue = parseFloat(value);
+                if (value === '') {
+                    delete dailyProfits[editingDay];
+                } else {
+                    dailyProfits[editingDay] = numValue;
+                }
+                saveToStorage();
+                renderCalendar();
+                updateDisplay();
+                closeModal();
+            }
+        }
+
+        function saveToStorage() {
+            const key = `gold-tracker-${currentYear}-${currentMonth}`;
+            localStorage.setItem(key, JSON.stringify(dailyProfits));
+        }
+
+        function loadFromStorage() {
+            const key = `gold-tracker-${currentYear}-${currentMonth}`;
+            const stored = localStorage.getItem(key);
+            dailyProfits = stored ? JSON.parse(stored) : {};
+        }
+
+        document.getElementById('monthSelector').value = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        
+        document.getElementById('monthSelector').onchange = (e) => {
+            const [year, month] = e.target.value.split('-');
+            currentYear = parseInt(year);
+            currentMonth = parseInt(month) - 1;
+            loadFromStorage();
+            renderCalendar();
+            updateDisplay();
+        };
+
+        document.getElementById('monthlyTarget').oninput = () => {
+            updateDisplay();
+        };
+
+        document.getElementById('saveBtn').onclick = saveProfit;
+        document.getElementById('cancelBtn').onclick = closeModal;
+        
+        document.getElementById('profitInput').onkeypress = (e) => {
+            if (e.key === 'Enter') saveProfit();
+        };
+
+        document.getElementById('modal').onclick = (e) => {
+            if (e.target === document.getElementById('modal')) closeModal();
+        };
+
+        loadFromStorage();
+        renderCalendar();
+        updateDisplay();
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'report') {
+                generateReport();
+            }
+        }
+
+        function getAllMonthsData() {
+            const allData = [];
+            const keys = Object.keys(localStorage);
+            
+            keys.forEach(key => {
+                if (key.startsWith('gold-tracker-')) {
+                    const parts = key.replace('gold-tracker-', '').split('-');
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]);
+                    const data = JSON.parse(localStorage.getItem(key));
+                    
+                    const targetKey = `target-${year}-${month}`;
+                    const target = parseFloat(localStorage.getItem(targetKey)) || 3000;
+                    
+                    allData.push({
+                        year,
+                        month,
+                        data,
+                        target
+                    });
+                }
+            });
+            
+            return allData.sort((a, b) => {
+                if (a.year !== b.year) return a.year - b.year;
+                return a.month - b.month;
+            });
+        }
+
+        function generateReport() {
+            const allMonths = getAllMonthsData();
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+            
+            let totalProfit = 0;
+            let bestMonthProfit = 0;
+            let bestMonthName = '-';
+            const chartData = [];
+            
+            allMonths.forEach(monthData => {
+                const { year, month, data, target } = monthData;
+                const monthName = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                
+                const achieved = Object.values(data).reduce((sum, p) => sum + parseFloat(p || 0), 0);
+                const workingDays = getWorkingDays(year, month);
+                const workedDays = Object.keys(data).filter(day => {
+                    const date = new Date(year, month, parseInt(day));
+                    const dayOfWeek = date.getDay();
+                    return dayOfWeek !== 0 && dayOfWeek !== 6;
+                }).length;
+                const avgPerDay = workedDays > 0 ? (achieved / workedDays) : 0;
+                const achievement = target > 0 ? (achieved / target * 100) : 0;
+                
+                totalProfit += achieved;
+                
+                if (achieved > bestMonthProfit) {
+                    bestMonthProfit = achieved;
+                    bestMonthName = monthName;
+                }
+                
+                chartData.push({ month: monthName, value: achieved, target });
+                
+                let statusBadge = '';
+                if (achievement >= 100) {
+                    statusBadge = '<span class="badge success">✓ Achieved</span>';
+                } else if (achievement >= 75) {
+                    statusBadge = '<span class="badge warning">Near Target</span>';
+                } else {
+                    statusBadge = '<span class="badge danger">Below Target</span>';
+                }
+                
+                const row = `
+                    <tr>
+                        <td><strong>${monthName}</strong></td>
+                        <td>${target.toFixed(2)}</td>
+                        <td><strong style="color: #10b981;">${achieved.toFixed(2)}</strong></td>
+                        <td>${workingDays}</td>
+                        <td>${workedDays}</td>
+                        <td>${avgPerDay.toFixed(2)}</td>
+                        <td><strong>${achievement.toFixed(1)}%</strong></td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            document.getElementById('totalMonths').textContent = allMonths.length;
+            document.getElementById('totalProfit').textContent = `${totalProfit.toFixed(0)}`;
+            document.getElementById('avgMonthly').textContent = allMonths.length > 0 ? `${(totalProfit / allMonths.length).toFixed(0)}` : '$0';
+            document.getElementById('bestMonth').textContent = bestMonthName;
+            
+            renderBarChart(chartData);
+        }
+
+        function renderBarChart(data) {
+            const chart = document.getElementById('barChart');
+            chart.innerHTML = '';
+            
+            if (data.length === 0) {
+                chart.innerHTML = '<p style="text-align: center; color: #6b7280;">No data available yet</p>';
+                return;
+            }
+            
+            const maxValue = Math.max(...data.map(d => Math.max(d.value, d.target)));
+            
+            data.forEach(item => {
+                const barContainer = document.createElement('div');
+                barContainer.style.flex = '1';
+                barContainer.style.display = 'flex';
+                barContainer.style.flexDirection = 'column';
+                barContainer.style.alignItems = 'center';
+                barContainer.style.height = '100%';
+                
+                const barWrapper = document.createElement('div');
+                barWrapper.style.width = '100%';
+                barWrapper.style.height = '100%';
+                barWrapper.style.display = 'flex';
+                barWrapper.style.alignItems = 'flex-end';
+                barWrapper.style.justifyContent = 'center';
+                barWrapper.style.position = 'relative';
+                
+                const bar = document.createElement('div');
+                const height = (item.value / maxValue) * 100;
+                bar.className = 'bar';
+                bar.style.height = `${height}%`;
+                bar.style.width = '60%';
+                bar.title = `Achieved: ${item.value.toFixed(2)} / Target: ${item.target.toFixed(2)}`;
+                
+                const value = document.createElement('div');
+                value.className = 'bar-value';
+                value.textContent = `${item.value.toFixed(0)}`;
+                bar.appendChild(value);
+                
+                barWrapper.appendChild(bar);
+                
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = item.month;
+                
+                barContainer.appendChild(barWrapper);
+                barContainer.appendChild(label);
+                chart.appendChild(barContainer);
+            });
+        }
+
+        function exportReport() {
+            const allMonths = getAllMonthsData();
+            let csv = 'Month,Target,Achieved,Working Days,Worked Days,Avg Per Day,Achievement %,Status\n';
+            
+            allMonths.forEach(monthData => {
+                const { year, month, data, target } = monthData;
+                const monthName = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                const achieved = Object.values(data).reduce((sum, p) => sum + parseFloat(p || 0), 0);
+                const workingDays = getWorkingDays(year, month);
+                const workedDays = Object.keys(data).filter(day => {
+                    const date = new Date(year, month, parseInt(day));
+                    const dayOfWeek = date.getDay();
+                    return dayOfWeek !== 0 && dayOfWeek !== 6;
+                }).length;
+                const avgPerDay = workedDays > 0 ? (achieved / workedDays) : 0;
+                const achievement = target > 0 ? (achieved / target * 100) : 0;
+                const status = achievement >= 100 ? 'Achieved' : achievement >= 75 ? 'Near Target' : 'Below Target';
+                
+                csv += `${monthName},${target.toFixed(2)},${achieved.toFixed(2)},${workingDays},${workedDays},${avgPerDay.toFixed(2)},${achievement.toFixed(1)},${status}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gold-trading-report.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('monthlyTarget').addEventListener('change', function() {
+            const targetKey = `target-${currentYear}-${currentMonth}`;
+            localStorage.setItem(targetKey, this.value);
+        });
+
+        const storedTarget = localStorage.getItem(`target-${currentYear}-${currentMonth}`);
+        if (storedTarget) {
+            document.getElementById('monthlyTarget').value = storedTarget;
+        }
+
+        loadBalance();
+    </script>
+</body>
+</html>
